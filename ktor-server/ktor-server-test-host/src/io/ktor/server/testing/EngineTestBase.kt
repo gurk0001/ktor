@@ -283,7 +283,7 @@ abstract class EngineTestBase<TEngine : ApplicationEngine, TConfiguration : Appl
             trustManager = tmf.trustManagers.first { it is X509TrustManager } as X509TrustManager
         }
 
-        private suspend fun CoroutineScope.waitForPort(port: Int) {
+        private suspend fun waitForPort(port: Int) {
             do {
                 delay(50)
                 try {
@@ -291,7 +291,7 @@ abstract class EngineTestBase<TEngine : ApplicationEngine, TConfiguration : Appl
                     break
                 } catch (expected: IOException) {
                 }
-            } while (isActive)
+            } while (true)
         }
     }
 }
