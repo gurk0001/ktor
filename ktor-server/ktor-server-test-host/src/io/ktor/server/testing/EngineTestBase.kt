@@ -188,7 +188,7 @@ abstract class EngineTestBase<TEngine : ApplicationEngine, TConfiguration : Appl
 
         // we start it on the global scope because we don't want it to fail the whole test
         // as far as we have retry loop on call side
-        val starting = GlobalScope.launch(testDispatcher) {
+        val starting = GlobalScope.async(testDispatcher) {
             server.start(wait = false)
 
             withTimeout(TimeUnit.SECONDS.toMillis(minOf(10, timeout.seconds))) {
@@ -201,8 +201,7 @@ abstract class EngineTestBase<TEngine : ApplicationEngine, TConfiguration : Appl
         return try {
             runBlocking {
                 starting.join()
-                if (starting.isCancelled) listOf(starting.getCancellationException().let { it.cause ?: it })
-                else emptyList()
+                starting.getCompletionExceptionOrNull()?.let { listOf(it) } ?: emptyList()
             }
         } catch (t: Throwable) { // InterruptedException?
             starting.cancel()

@@ -7,6 +7,7 @@ import kotlinx.coroutines.io.ByteChannel
 import kotlinx.io.pool.*
 import java.nio.*
 import java.nio.channels.*
+import java.util.concurrent.CancellationException
 import java.util.concurrent.atomic.*
 import kotlin.coroutines.*
 
@@ -131,5 +132,5 @@ internal abstract class NIOSocketImpl<out S>(
     private val AtomicReference<out Job?>.exception: Throwable?
         get() = get()?.takeUnless { it.isActive || it.isCancelled }
                 ?.getCancellationException()
-                ?.let { (it as? JobCancellationException)?.cause }
+                ?.let { (it as? CancellationException)?.cause }
 }

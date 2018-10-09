@@ -2,6 +2,18 @@ package io.ktor.http
 
 import kotlin.properties.Delegates.observable
 
+/**
+ * A URL builder with all mutable components
+ *
+ * @property host name without port (domain)
+ * @property port port number
+ * @property user username part (optional)
+ * @property password password part (optional)
+ * @property encodedPath encoded URL path without query
+ * @property parameters URL query parameters
+ * @property fragment URL fragment (anchor name)
+ * @property trailingQuery keep a trailing question character even if there are no query parameters
+ */
 class URLBuilder(
     protocol: URLProtocol = URLProtocol.HTTP,
     var host: String = "localhost",
@@ -13,14 +25,23 @@ class URLBuilder(
     var fragment: String = "",
     var trailingQuery: Boolean = false
 ) {
+    /**
+     * URL protocol (changing this we modify port as well)
+     */
     var protocol: URLProtocol by observable(protocol) { _, _, value ->
         port = value.defaultPort
     }
 
+    /**
+     * Encode [components] to [encodedPath]
+     */
     fun path(vararg components: String) {
         path(components.asList())
     }
 
+    /**
+     * Encode [components] to [encodedPath]
+     */
     fun path(components: List<String>) {
         encodedPath = components.joinToString("/", prefix = "/") { it.encodeURLQueryComponent() }
     }
@@ -53,9 +74,15 @@ class URLBuilder(
         return out
     }
 
+    /**
+     * Build a URL string
+     */
     // note: 256 should fit 99.5% of all urls according to http://www.supermind.org/blog/740/average-length-of-a-url-part-2
     fun buildString(): String = appendTo(StringBuilder(256)).toString()
 
+    /**
+     * Build a [Url] instance (everything is copied to a new instance)
+     */
     fun build(): Url = Url(
         protocol, host, port, encodedPath, parameters.build(), fragment, user, password, trailingQuery
     )
@@ -64,8 +91,24 @@ class URLBuilder(
     companion object
 }
 
+/**
+ * Create a copy of this builder. Modifications in a copy is not reflected in the original instance and vise-versa.
+ */
 fun URLBuilder.clone(): URLBuilder = URLBuilder().takeFrom(this)
 
+/**
+ * Represents an immutable URL
+ *
+ * @property protocol
+ * @property host name without port (domain)
+ * @property port number
+ * @property encodedPath encoded path without query string
+ * @property parameters URL query parameters
+ * @property fragment URL fragment (anchor name)
+ * @property user username part of URL
+ * @property password password part of URL
+ * @property trailingQuery keep trailing question character even if there are no query parameters
+ */
 data class Url(
     val protocol: URLProtocol,
     val host: String,
